@@ -105,7 +105,14 @@ func (db *MiniDB) Put(key []byte, value []byte) (err error) {
 
 	db.mu.Lock()
 	defer db.mu.Unlock()
-
+	
+	// 从内存当中取出索引信息
+	_, ok := db.indexes[string(key)]
+	// key 存在则不添加
+	if ok {
+		return
+	}
+	
 	offset := db.dbFile.Offset
 	// 封装成 Entry
 	entry := NewEntry(key, value, PUT)
