@@ -43,7 +43,7 @@ func (e *Entry) Encode() ([]byte, error) {
 	return buf, nil
 }
 
-// 解码 buf 字节数组，返回 Entry
+// Decode 解码 buf 字节数组，返回 Entry
 func Decode(buf []byte) (*Entry, error) {
 	ks := binary.BigEndian.Uint32(buf[0:4])
 	vs := binary.BigEndian.Uint32(buf[4:8])

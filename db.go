@@ -3,6 +3,7 @@ package minidb
 import (
 	"io"
 	"os"
+	"path/filepath"
 	"sync"
 )
 
@@ -45,6 +46,8 @@ func (db *MiniDB) Merge() error {
 	if db.dbFile.Offset == 0 {
 		return nil
 	}
+	db.mu.Lock()
+	defer db.mu.Unlock()
 
 	var (
 		validEntries []*Entry
@@ -73,7 +76,6 @@ func (db *MiniDB) Merge() error {
 		if err != nil {
 			return err
 		}
-		defer os.Remove(mergeDBFile.File.Name())
 
 		// 重新写入有效的 entry
 		for _, entry := range validEntries {
@@ -86,13 +88,10 @@ func (db *MiniDB) Merge() error {
 			// 更新索引
 			db.indexes[string(entry.Key)] = writeOff
 		}
-
-		// 删除旧的数据文件
-		os.Remove(db.dbFile.File.Name())
-		// 临时文件变更为新的数据文件
-		os.Rename(mergeDBFile.File.Name(), db.dirPath+string(os.PathSeparator)+FileName)
-
-		db.dbFile = mergeDBFile
+		err = db.changeDBFile(mergeDBFile)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -122,6 +121,13 @@ func (db *MiniDB) Put(key []byte, value []byte) (err error) {
 	// 写到内存
 	db.indexes[string(key)] = offset
 	return
+}
+
+func (db *MiniDB) Keys() (keys []string) {
+	for key := range db.indexes {
+		keys = append(keys, key)
+	}
+	return keys
 }
 
 // Get 取出数据
@@ -206,4 +212,25 @@ func (db *MiniDB) loadIndexesFromFile(dbFile *DBFile) {
 		offset += e.GetSize()
 	}
 	return
+}
+
+func (db *MiniDB) changeDBFile(dbFile *DBFile) (err error) {
+	err = db.dbFile.File.Close()
+	if err != nil {
+		return err
+	}
+	err = os.Remove(db.dbFile.File.Name())
+	if err != nil {
+		return err
+	}
+	err = dbFile.File.Close()
+	if err != nil {
+		return err
+	}
+	err = os.Rename(dbFile.File.Name(), filepath.Join(db.dirPath, FileName))
+	if err != nil {
+		return err
+	}
+	db.dbFile, err = NewDBFile(db.dirPath)
+	return err
 }

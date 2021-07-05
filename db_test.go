@@ -33,6 +33,10 @@ func TestMiniDB_Put(t *testing.T) {
 	if err != nil {
 		t.Log(err)
 	}
+
+	if len(db.Keys()) != 5 {
+		t.Error("Put error")
+	}
 }
 
 func TestMiniDB_Get(t *testing.T) {
@@ -55,7 +59,10 @@ func TestMiniDB_Get(t *testing.T) {
 	getVal([]byte("test_key_2"))
 	getVal([]byte("test_key_3"))
 	getVal([]byte("test_key_4"))
-	getVal([]byte("test_key_5"))
+
+	if len(db.Keys()) != 5 {
+		t.Error("Get error")
+	}
 }
 
 func TestMiniDB_Del(t *testing.T) {
@@ -63,12 +70,14 @@ func TestMiniDB_Del(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
-	key := []byte("test_key_78")
+	key := []byte("test_key_2")
 	err = db.Del(key)
 
 	if err != nil {
 		t.Error("del err: ", err)
+	}
+	if len(db.Keys()) != 4 {
+		t.Error("Get error")
 	}
 }
 
