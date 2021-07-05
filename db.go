@@ -105,14 +105,14 @@ func (db *MiniDB) Put(key []byte, value []byte) (err error) {
 
 	db.mu.Lock()
 	defer db.mu.Unlock()
-	
+
 	// 从内存当中取出索引信息
 	_, ok := db.indexes[string(key)]
 	// key 存在则不添加
 	if ok {
 		return
 	}
-	
+
 	offset := db.dbFile.Offset
 	// 封装成 Entry
 	entry := NewEntry(key, value, PUT)
@@ -195,9 +195,13 @@ func (db *MiniDB) loadIndexesFromFile(dbFile *DBFile) {
 			}
 			return
 		}
+		key := string(e.Key)
 		if e.Mark == PUT {
 			// 设置索引状态
-			db.indexes[string(e.Key)] = offset
+			db.indexes[key] = offset
+		}
+		if e.Mark == DEL {
+			delete(db.indexes, key)
 		}
 		offset += e.GetSize()
 	}
