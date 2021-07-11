@@ -72,7 +72,7 @@ func (df *DBFile) Write(e *Entry) (err error) {
 	if err != nil {
 		return err
 	}
-	_, err = df.File.Write(enc)
+	_, err = df.File.WriteAt(enc, df.Offset)
 	df.Offset += e.GetSize()
 	return
 }
