@@ -188,10 +188,15 @@ func (db *MiniDB) loadIndexesFromFile(dbFile *DBFile) {
 			}
 			return
 		}
-		if e.Mark == PUT {
-			// 设置索引状态
-			db.indexes[string(e.Key)] = offset
+
+		// 设置索引状态
+		db.indexes[string(e.Key)] = offset
+
+		if e.Mark == DEL {
+			// 删除内存中的 key
+			delete(db.indexes, string(e.Key))
 		}
+
 		offset += e.GetSize()
 	}
 	return
