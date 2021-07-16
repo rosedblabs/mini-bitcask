@@ -87,10 +87,19 @@ func (db *MiniDB) Merge() error {
 			db.indexes[string(entry.Key)] = writeOff
 		}
 
+		// 获取文件名
+		dbFileName := db.dbFile.File.Name()
+		// 关闭文件
+		db.dbFile.File.Close()
 		// 删除旧的数据文件
-		os.Remove(db.dbFile.File.Name())
+		os.Remove(dbFileName)
+
+		// 获取文件名
+		mergeDBFileName := mergeDBFile.File.Name()
+		// 关闭文件
+		mergeDBFile.File.Close()
 		// 临时文件变更为新的数据文件
-		os.Rename(mergeDBFile.File.Name(), db.dirPath+string(os.PathSeparator)+FileName)
+		os.Rename(mergeDBFileName, db.dirPath+string(os.PathSeparator)+FileName)
 
 		db.dbFile = mergeDBFile
 	}
