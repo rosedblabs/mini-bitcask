@@ -35,7 +35,7 @@ func Open(dirPath string) (*MiniDB, error) {
 	}
 
 	// 加载索引
-	db.loadIndexesFromFile(dbFile)
+	db.loadIndexesFromFile()
 	return db, nil
 }
 
@@ -182,8 +182,8 @@ func (db *MiniDB) Del(key []byte) (err error) {
 }
 
 // 从文件当中加载索引
-func (db *MiniDB) loadIndexesFromFile(dbFile *DBFile) {
-	if dbFile == nil {
+func (db *MiniDB) loadIndexesFromFile() {
+	if db.dbFile == nil {
 		return
 	}
 
