@@ -1,6 +1,8 @@
 package minidb
 
 import (
+	"errors"
+	"fmt"
 	"io"
 	"os"
 	"sync"
@@ -139,6 +141,7 @@ func (db *MiniDB) Get(key []byte) (val []byte, err error) {
 	offset, ok := db.indexes[string(key)]
 	// key 不存在
 	if !ok {
+		err = errors.New(fmt.Sprintf("{key: %s doesn't exit.}", key))
 		return
 	}
 
