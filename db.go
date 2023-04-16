@@ -213,3 +213,12 @@ func (db *MiniDB) loadIndexesFromFile() {
 	}
 	return
 }
+
+// Close 关闭 db 实例
+func (db *MiniDB) Close() error {
+	if db.dbFile == nil {
+		return errors.New("invalid dbfile")
+	}
+
+	return db.dbFile.File.Close()
+}
