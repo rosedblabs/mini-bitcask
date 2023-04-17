@@ -1,6 +1,9 @@
 package minidb
 
-import "os"
+import (
+	"os"
+	"path/filepath"
+)
 
 const FileName = "minidb.data"
 const MergeFileName = "minidb.data.merge"
@@ -26,13 +29,13 @@ func newInternal(fileName string) (*DBFile, error) {
 
 // NewDBFile 创建一个新的数据文件
 func NewDBFile(path string) (*DBFile, error) {
-	fileName := path + string(os.PathSeparator) + FileName
+	fileName := filepath.Join(path, FileName)
 	return newInternal(fileName)
 }
 
 // NewMergeDBFile 新建一个合并时的数据文件
 func NewMergeDBFile(path string) (*DBFile, error) {
-	fileName := path + string(os.PathSeparator) + MergeFileName
+	fileName := filepath.Join(path, MergeFileName)
 	return newInternal(fileName)
 }
 
