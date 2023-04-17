@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"sync"
 )
 
@@ -101,7 +102,7 @@ func (db *MiniDB) Merge() error {
 		// 关闭文件
 		mergeDBFile.File.Close()
 		// 临时文件变更为新的数据文件
-		os.Rename(mergeDBFileName, db.dirPath+string(os.PathSeparator)+FileName)
+		os.Rename(mergeDBFileName, filepath.Join(db.dirPath, FileName))
 
 		db.dbFile = mergeDBFile
 	}
