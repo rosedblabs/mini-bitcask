@@ -78,6 +78,9 @@ func (db *MiniDB) Merge() error {
 		}
 		defer os.Remove(mergeDBFile.File.Name())
 
+		db.mu.Lock()
+		defer db.mu.Unlock()
+
 		// 重新写入有效的 entry
 		for _, entry := range validEntries {
 			writeOff := mergeDBFile.Offset
