@@ -99,8 +99,6 @@ func (db *MiniDB) Merge() error {
 
 		// 获取文件名
 		mergeDBFileName := mergeDBFile.File.Name()
-		// 关闭文件
-		mergeDBFile.File.Close()
 		// 临时文件变更为新的数据文件
 		os.Rename(mergeDBFileName, filepath.Join(db.dirPath, FileName))
 
