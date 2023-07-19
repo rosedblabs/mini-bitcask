@@ -55,7 +55,11 @@ func TestMiniDB_Get(t *testing.T) {
 	getVal([]byte("test_key_2"))
 	getVal([]byte("test_key_3"))
 	getVal([]byte("test_key_4"))
-	getVal([]byte("test_key_5"))
+
+	_, err = db.Get([]byte("test_key_5"))
+	if err == nil {
+		t.Error("expected test_Key_5 does not exist")
+	}
 }
 
 func TestMiniDB_Del(t *testing.T) {
