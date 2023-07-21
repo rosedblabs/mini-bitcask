@@ -1,8 +1,6 @@
 package minidb
 
 import (
-	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -135,6 +133,18 @@ func (db *MiniDB) Put(key []byte, value []byte) (err error) {
 	return
 }
 
+// exist key值是否存在与数据库
+// 若存在返回偏移量；不存在返回ErrKeyNotFound
+func (db *MiniDB) exist(key []byte) (int64, error) {
+	// 从内存当中取出索引信息
+	offset, ok := db.indexes[string(key)]
+	// key 不存在
+	if !ok {
+		return 0, ErrKeyNotFound
+	}
+	return offset, nil
+}
+
 // Get 取出数据
 func (db *MiniDB) Get(key []byte) (val []byte, err error) {
 	if len(key) == 0 {
@@ -144,11 +154,8 @@ func (db *MiniDB) Get(key []byte) (val []byte, err error) {
 	db.mu.RLock()
 	defer db.mu.RUnlock()
 
-	// 从内存当中取出索引信息
-	offset, ok := db.indexes[string(key)]
-	// key 不存在
-	if !ok {
-		err = fmt.Errorf("{key: %s doesn't exist.}", key)
+	offset, err := db.exist(key)
+	if err == ErrKeyNotFound {
 		return
 	}
 
@@ -172,10 +179,10 @@ func (db *MiniDB) Del(key []byte) (err error) {
 
 	db.mu.Lock()
 	defer db.mu.Unlock()
-	// 从内存当中取出索引信息
-	_, ok := db.indexes[string(key)]
-	// key 不存在，忽略
-	if !ok {
+
+	_, err = db.exist(key)
+	if err == ErrKeyNotFound {
+		err = nil
 		return
 	}
 
@@ -224,7 +231,7 @@ func (db *MiniDB) loadIndexesFromFile() {
 // Close 关闭 db 实例
 func (db *MiniDB) Close() error {
 	if db.dbFile == nil {
-		return errors.New("invalid dbfile")
+		return ErrInvalidDBFile
 	}
 
 	return db.dbFile.File.Close()
