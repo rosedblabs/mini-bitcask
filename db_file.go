@@ -3,6 +3,7 @@ package minidb
 import (
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 const FileName = "minidb.data"
@@ -10,8 +11,9 @@ const MergeFileName = "minidb.data.merge"
 
 // DBFile 数据文件定义
 type DBFile struct {
-	File   *os.File
-	Offset int64
+	File          *os.File
+	Offset        int64
+	HeaderBufPool *sync.Pool
 }
 
 func newInternal(fileName string) (*DBFile, error) {
@@ -24,7 +26,10 @@ func newInternal(fileName string) (*DBFile, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &DBFile{Offset: stat.Size(), File: file}, nil
+	pool := &sync.Pool{New: func() interface{} {
+		return make([]byte, entryHeaderSize)
+	}}
+	return &DBFile{Offset: stat.Size(), File: file, HeaderBufPool: pool}, nil
 }
 
 // NewDBFile 创建一个新的数据文件
@@ -41,7 +46,8 @@ func NewMergeDBFile(path string) (*DBFile, error) {
 
 // Read 从 offset 处开始读取
 func (df *DBFile) Read(offset int64) (e *Entry, err error) {
-	buf := make([]byte, entryHeaderSize)
+	buf := df.HeaderBufPool.Get().([]byte)
+	defer df.HeaderBufPool.Put(buf)
 	if _, err = df.File.ReadAt(buf, offset); err != nil {
 		return
 	}
