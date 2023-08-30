@@ -8,6 +8,10 @@ import (
 const FileName = "minidb.data"
 const MergeFileName = "minidb.data.merge"
 
+var (
+	headerBuf = make([]byte, entryHeaderSize)
+)
+
 // DBFile 数据文件定义
 type DBFile struct {
 	File   *os.File
@@ -41,11 +45,10 @@ func NewMergeDBFile(path string) (*DBFile, error) {
 
 // Read 从 offset 处开始读取
 func (df *DBFile) Read(offset int64) (e *Entry, err error) {
-	buf := make([]byte, entryHeaderSize)
-	if _, err = df.File.ReadAt(buf, offset); err != nil {
+	if _, err = df.File.ReadAt(headerBuf, offset); err != nil {
 		return
 	}
-	if e, err = Decode(buf); err != nil {
+	if e, err = Decode(headerBuf); err != nil {
 		return
 	}
 
