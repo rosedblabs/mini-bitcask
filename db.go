@@ -24,7 +24,11 @@ func Open(dirPath string) (*MiniDB, error) {
 	}
 
 	// 加载数据文件
-	dbFile, err := NewDBFile(dirPath)
+	dirAbsPath, err := filepath.Abs(dirPath)
+	if err != nil {
+		return nil, err
+	}
+	dbFile, err := NewDBFile(dirAbsPath)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +36,7 @@ func Open(dirPath string) (*MiniDB, error) {
 	db := &MiniDB{
 		dbFile:  dbFile,
 		indexes: make(map[string]int64),
-		dirPath: dirPath,
+		dirPath: dirAbsPath,
 	}
 
 	// 加载索引
