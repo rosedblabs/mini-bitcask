@@ -3,18 +3,18 @@ package main
 import (
 	"fmt"
 
-	"github.com/roseduan/minidb"
+	"github.com/roseduan/minibitcask"
 )
 
 func main() {
-	db, err := minidb.Open("/tmp/minidb")
+	db, err := minibitcask.Open("/tmp/minibitcask")
 	if err != nil {
 		panic(err)
 	}
 
 	var (
 		key   = []byte("dbname")
-		value = []byte("minidb")
+		value = []byte("minibitcask")
 	)
 
 	err = db.Put(key, value)
@@ -39,5 +39,5 @@ func main() {
 	fmt.Println("4. compact data to new dbfile.")
 
 	db.Close()
-	fmt.Println("5. close minidb.")
+	fmt.Println("5. close minibitcask.")
 }

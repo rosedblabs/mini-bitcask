@@ -1,6 +1,3 @@
-module github.com/roseduan/minidb
+module github.com/roseduan/minibitcask
 
 go 1.14
-
-require (
-)

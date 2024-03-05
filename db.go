@@ -1,4 +1,4 @@
-package minidb
+package minibitcask
 
 import (
 	"io"
@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-type MiniDB struct {
+type MiniBitcask struct {
 	indexes map[string]int64 // 内存中的索引信息
 	dbFile  *DBFile          // 数据文件
 	dirPath string           // 数据目录
@@ -15,7 +15,7 @@ type MiniDB struct {
 }
 
 // Open 开启一个数据库实例
-func Open(dirPath string) (*MiniDB, error) {
+func Open(dirPath string) (*MiniBitcask, error) {
 	// 如果数据库目录不存在，则新建一个
 	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
 		if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
@@ -33,7 +33,7 @@ func Open(dirPath string) (*MiniDB, error) {
 		return nil, err
 	}
 
-	db := &MiniDB{
+	db := &MiniBitcask{
 		dbFile:  dbFile,
 		indexes: make(map[string]int64),
 		dirPath: dirAbsPath,
@@ -45,7 +45,7 @@ func Open(dirPath string) (*MiniDB, error) {
 }
 
 // Merge 合并数据文件，在rosedb当中是 Reclaim 方法
-func (db *MiniDB) Merge() error {
+func (db *MiniBitcask) Merge() error {
 	// 没有数据，忽略
 	if db.dbFile.Offset == 0 {
 		return nil
@@ -78,7 +78,9 @@ func (db *MiniDB) Merge() error {
 		if err != nil {
 			return err
 		}
-		defer os.Remove(mergeDBFile.File.Name())
+		defer func() {
+			_ = os.Remove(mergeDBFile.File.Name())
+		}()
 
 		db.mu.Lock()
 		defer db.mu.Unlock()
@@ -98,14 +100,14 @@ func (db *MiniDB) Merge() error {
 		// 获取文件名
 		dbFileName := db.dbFile.File.Name()
 		// 关闭文件
-		db.dbFile.File.Close()
+		_ = db.dbFile.File.Close()
 		// 删除旧的数据文件
-		os.Remove(dbFileName)
-		mergeDBFile.File.Close()
+		_ = os.Remove(dbFileName)
+		_ = mergeDBFile.File.Close()
 		// 获取文件名
 		mergeDBFileName := mergeDBFile.File.Name()
 		// 临时文件变更为新的数据文件
-		os.Rename(mergeDBFileName, filepath.Join(db.dirPath, FileName))
+		_ = os.Rename(mergeDBFileName, filepath.Join(db.dirPath, FileName))
 
 		dbFile, err := NewDBFile(db.dirPath)
 		if err != nil {
@@ -118,7 +120,7 @@ func (db *MiniDB) Merge() error {
 }
 
 // Put 写入数据
-func (db *MiniDB) Put(key []byte, value []byte) (err error) {
+func (db *MiniBitcask) Put(key []byte, value []byte) (err error) {
 	if len(key) == 0 {
 		return
 	}
@@ -139,7 +141,7 @@ func (db *MiniDB) Put(key []byte, value []byte) (err error) {
 
 // exist key值是否存在与数据库
 // 若存在返回偏移量；不存在返回ErrKeyNotFound
-func (db *MiniDB) exist(key []byte) (int64, error) {
+func (db *MiniBitcask) exist(key []byte) (int64, error) {
 	// 从内存当中取出索引信息
 	offset, ok := db.indexes[string(key)]
 	// key 不存在
@@ -150,7 +152,7 @@ func (db *MiniDB) exist(key []byte) (int64, error) {
 }
 
 // Get 取出数据
-func (db *MiniDB) Get(key []byte) (val []byte, err error) {
+func (db *MiniBitcask) Get(key []byte) (val []byte, err error) {
 	if len(key) == 0 {
 		return
 	}
@@ -176,7 +178,7 @@ func (db *MiniDB) Get(key []byte) (val []byte, err error) {
 }
 
 // Del 删除数据
-func (db *MiniDB) Del(key []byte) (err error) {
+func (db *MiniBitcask) Del(key []byte) (err error) {
 	if len(key) == 0 {
 		return
 	}
@@ -203,7 +205,7 @@ func (db *MiniDB) Del(key []byte) (err error) {
 }
 
 // 从文件当中加载索引
-func (db *MiniDB) loadIndexesFromFile() {
+func (db *MiniBitcask) loadIndexesFromFile() {
 	if db.dbFile == nil {
 		return
 	}
@@ -233,7 +235,7 @@ func (db *MiniDB) loadIndexesFromFile() {
 }
 
 // Close 关闭 db 实例
-func (db *MiniDB) Close() error {
+func (db *MiniBitcask) Close() error {
 	if db.dbFile == nil {
 		return ErrInvalidDBFile
 	}

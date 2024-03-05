@@ -1,4 +1,4 @@
-package minidb
+package minibitcask
 
 import (
 	"os"
@@ -6,8 +6,8 @@ import (
 	"sync"
 )
 
-const FileName = "minidb.data"
-const MergeFileName = "minidb.data.merge"
+const FileName = "minibitcask.data"
+const MergeFileName = "minibitcask.data.merge"
 
 // DBFile 数据文件定义
 type DBFile struct {

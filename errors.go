@@ -1,4 +1,4 @@
-package minidb
+package minibitcask
 
 import "errors"
 

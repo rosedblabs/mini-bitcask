@@ -1,4 +1,4 @@
-package minidb
+package minibitcask
 
 import (
 	"math/rand"
@@ -8,15 +8,15 @@ import (
 )
 
 func TestOpen(t *testing.T) {
-	db, err := Open("/tmp/minidb")
+	db, err := Open("/tmp/minibitcask")
 	if err != nil {
 		t.Error(err)
 	}
 	t.Log(db)
 }
 
-func TestMiniDB_Put(t *testing.T) {
-	db, err := Open("/tmp/minidb")
+func TestMiniBitcask_Put(t *testing.T) {
+	db, err := Open("/tmp/minibitcask")
 	if err != nil {
 		t.Error(err)
 	}
@@ -35,8 +35,8 @@ func TestMiniDB_Put(t *testing.T) {
 	}
 }
 
-func TestMiniDB_Get(t *testing.T) {
-	db, err := Open("/tmp/minidb")
+func TestMiniBitcask_Get(t *testing.T) {
+	db, err := Open("/tmp/minibitcask")
 	if err != nil {
 		t.Error(err)
 	}
@@ -62,8 +62,8 @@ func TestMiniDB_Get(t *testing.T) {
 	}
 }
 
-func TestMiniDB_Del(t *testing.T) {
-	db, err := Open("/tmp/minidb")
+func TestMiniBitcask_Del(t *testing.T) {
+	db, err := Open("/tmp/minibitcask")
 	if err != nil {
 		t.Error(err)
 	}
@@ -76,8 +76,8 @@ func TestMiniDB_Del(t *testing.T) {
 	}
 }
 
-func TestMiniDB_Merge(t *testing.T) {
-	db, err := Open("/tmp/minidb")
+func TestMiniBitcask_Merge(t *testing.T) {
+	db, err := Open("/tmp/minibitcask")
 	if err != nil {
 		t.Error(err)
 	}
