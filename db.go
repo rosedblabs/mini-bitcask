@@ -72,50 +72,48 @@ func (db *MiniBitcask) Merge() error {
 		offset += e.GetSize()
 	}
 
-	if len(validEntries) > 0 {
-		// 新建临时文件
-		mergeDBFile, err := NewMergeDBFile(db.dirPath)
-		if err != nil {
-			return err
-		}
-		defer func() {
-			_ = os.Remove(mergeDBFile.File.Name())
-		}()
-
-		db.mu.Lock()
-		defer db.mu.Unlock()
-
-		// 重新写入有效的 entry
-		for _, entry := range validEntries {
-			writeOff := mergeDBFile.Offset
-			err := mergeDBFile.Write(entry)
-			if err != nil {
-				return err
-			}
-
-			// 更新索引
-			db.indexes[string(entry.Key)] = writeOff
-		}
-
-		// 获取文件名
-		dbFileName := db.dbFile.File.Name()
-		// 关闭文件
-		_ = db.dbFile.File.Close()
-		// 删除旧的数据文件
-		_ = os.Remove(dbFileName)
-		_ = mergeDBFile.File.Close()
-		// 获取文件名
-		mergeDBFileName := mergeDBFile.File.Name()
-		// 临时文件变更为新的数据文件
-		_ = os.Rename(mergeDBFileName, filepath.Join(db.dirPath, FileName))
-
-		dbFile, err := NewDBFile(db.dirPath)
-		if err != nil {
-			return err
-		}
-
-		db.dbFile = dbFile
+	// 新建临时文件
+	mergeDBFile, err := NewMergeDBFile(db.dirPath)
+	if err != nil {
+		return err
 	}
+	defer func() {
+		_ = os.Remove(mergeDBFile.File.Name())
+	}()
+
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	// 重新写入有效的 entry
+	for _, entry := range validEntries {
+		writeOff := mergeDBFile.Offset
+		err = mergeDBFile.Write(entry)
+		if err != nil {
+			return err
+		}
+
+		// 更新索引
+		db.indexes[string(entry.Key)] = writeOff
+	}
+
+	// 获取文件名
+	dbFileName := db.dbFile.File.Name()
+	// 关闭文件
+	_ = db.dbFile.File.Close()
+	// 删除旧的数据文件
+	_ = os.Remove(dbFileName)
+	_ = mergeDBFile.File.Close()
+	// 获取文件名
+	mergeDBFileName := mergeDBFile.File.Name()
+	// 临时文件变更为新的数据文件
+	_ = os.Rename(mergeDBFileName, filepath.Join(db.dirPath, FileName))
+
+	dbFile, err := NewDBFile(db.dirPath)
+	if err != nil {
+		return err
+	}
+
+	db.dbFile = dbFile
 	return nil
 }
 
