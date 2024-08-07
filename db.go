@@ -229,7 +229,6 @@ func (db *MiniBitcask) loadIndexesFromFile() {
 
 		offset += e.GetSize()
 	}
-	return
 }
 
 // Close 关闭 db 实例
